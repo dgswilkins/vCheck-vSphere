@@ -50,6 +50,7 @@ else
 
 # Path to credentials file which is automatically created if needed
 $Credfile = $ScriptPath + "\Windowscreds.xml"
+$VMCredfile = $ScriptPath + "\VMwarecreds.xml"
 
 #
 # Adding PowerCLI core module/pssnapin
@@ -89,7 +90,22 @@ if($OpenConnection.IsConnected) {
    $VIConnection = $OpenConnection
 } else {
    Write-CustomOut ( "{0}: {1}" -f $pLang.connOpen, $Server )
-   $VIConnection = Connect-VIServer -Server $VIServer -Port $Port
+    If (Test-Path $VMCredfile) {
+        $LoadedCredentials = Import-Clixml $VMCredfile
+        $creds = New-Object System.Management.Automation.PsCredential($LoadedCredentials.Username,($LoadedCredentials.Password | ConvertTo-SecureString))
+        $VIConnection = Connect-VIServer -Server $VIServer -Port $Port -Credential $creds
+    } Else {
+        # No default creds found so asking to store VMware credentials in a file for future use
+        Write-Host "This module requires credentials to access the host $VIServer, please enter Administrator credentials for this check to work, these will be stored in an encrypted file: $VMCredfile" 
+        $Credential = Get-Credential
+        $Pass = $credential.Password | ConvertFrom-SecureString
+        $Username = $Credential.UserName
+        $Store = "" | Select Username, Password
+        $Store.Username = $Username
+        $Store.Password = $Pass
+        $Store | Export-Clixml $VMCredfile
+        $VIConnection = Connect-VIServer -Server $VIServer -Port $Port
+    }
 }
 
 if (-not $VIConnection.IsConnected) {
