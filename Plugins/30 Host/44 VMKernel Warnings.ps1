@@ -18,7 +18,7 @@ $VMKernelWarnings = @()
 foreach ($VMHost in ($HostsViews)){
    $product = $VMHost.config.product.ProductLineId
    if ($product -eq "embeddedEsx" -and $VIVersion -lt 5){
-      $Warnings = (Get-Log -vmhost ($VMHost.name) -Key messages -ErrorAction SilentlyContinue).entries |where {$_ -match "warning" -and $_ -match "vmkernel"}
+      $Warnings = (Get-Log -vmhost ($VMHost.name) -Key messages -ErrorAction SilentlyContinue).entries | Where-Object {$_ -match "warning" -and $_ -match "vmkernel"}
       if ($Warnings -ne $null) {
          $VMKernelWarning = @()
          $Warnings | % {
@@ -36,13 +36,13 @@ foreach ($VMHost in ($HostsViews)){
             }
             $VMKernelWarning += $Details
          }
-         $VMKernelWarnings += $VMKernelWarning | Sort-Object -Property Length -Unique |select VMHost, Message, KBSearch, Google
+         $VMKernelWarnings += $VMKernelWarning | Sort-Object -Property Length -Unique | Select-Object VMHost, Message, KBSearch, Google
       }	
    } else {
-      $Warnings = (Get-Log -VMHost ($VMHost.Name) -Key vmkernel -ErrorAction SilentlyContinue).Entries | where {$_ -match "warning"}
+      $Warnings = (Get-Log -VMHost ($VMHost.Name) -Key vmkernel -ErrorAction SilentlyContinue).Entries | Where-Object {$_ -match "warning"}
       if ($Warnings -ne $null) {
          $VMKernelWarning = @()
-         $Warnings | Foreach {
+         $Warnings | Foreach-Object {
             if ($simpleWarning) {
                $Details = "" | Select-Object VMHost, Message
                $Details.VMHost = $VMHost.Name
@@ -57,9 +57,9 @@ foreach ($VMHost in ($HostsViews)){
             }
             $VMKernelWarning += $Details
          }
-         $VMKernelWarnings += $VMKernelWarning | Sort-Object -Property Length -Unique |select VMHost, Message, KBSearch, Google
+         $VMKernelWarnings += $VMKernelWarning | Sort-Object -Property Length -Unique | Select-Object VMHost, Message, KBSearch, Google
       }
    }
 }
 
-$VMKernelWarnings | sort Message -Descending
+$VMKernelWarnings | Sort-Object Message -Descending

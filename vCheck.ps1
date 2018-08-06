@@ -30,7 +30,7 @@
 .NOTES 
    File Name  : vCheck.ps1 
    Author     : Alan Renouf - @alanrenouf
-   Version    : 6.24
+   Version    : 6.25
 
    Thanks to all who have commented on my blog to help improve this project
    all beta testers and previous contributors to this script.
@@ -68,51 +68,22 @@ param (
 	[string]$job
 )
 
-$vCheckVersion = "6.23"
+$vCheckVersion = "6.25"
 $Date = Get-Date
+
+# Setup all paths required for script to run
+$ScriptPath = (Split-Path ((Get-Variable MyInvocation).Value).MyCommand.Path)
+$PluginsFolder = $ScriptPath + "\Plugins\"
 
 #region Internationalization
 ################################################################################
 #                             Internationalization                             #
 ################################################################################
-$lang = DATA {
-	ConvertFrom-StringData @' 
-      setupMsg01  = 
-      setupMsg02  = Welcome to vCheck by Virtu-Al http://virtu-al.net
-      setupMsg03  = =================================================
-      setupMsg04  = This is the first time you have run this script or you have re-enabled the setup wizard.
-      setupMsg05  =
-      setupMsg06  = To re-run this wizard in the future please use vCheck.ps1 -Config
-      setupMsg07  = To get usage information, please use Get-Help vCheck.ps1
-      setupMsg08  =
-      setupMsg09  = Please complete the following questions or hit Enter to accept the current setting
-      setupMsg10  = After completing this wizard the vCheck report will be displayed on the screen.
-      setupMsg11  =
-      configMsg01 = After you have exported the new settings from the configuration interface,
-      configMsg02  = import the settings CSV file using Import-vCheckSettings -csvfile C:\\path\\to\\vCheckSettings.csv
-      configMsg03  = NOTE: If vCheckSettings.csv is stored in the vCheck folder, simply run Import-vCheckSettings
-      resFileWarn = Image File not found for {0}!
-      pluginInvalid = Plugin does not exist: {0}
-      pluginpathInvalid = Plugin path "{0}" is invalid, defaulting to {1}
-      gvInvalid   = Global Variables path invalid in job specification, defaulting to {0}
-      varUndefined = Variable `${0} is not defined in GlobalVariables.ps1
-      pluginActivity = Evaluating plugins
-      pluginStatus = [{0} of {1}] {2}
-      Complete = Complete
-      pluginBegin = \nBegin Plugin Processing
-      pluginStart  = ..start calculating {0} by {1} v{2} [{3} of {4}]
-      pluginEnd    = ..finished calculating {0} by {1} v{2} [{3} of {4}]
-      repTime     = This report took {0} minutes to run all checks, completing on {1} at {2}
-      repPRTitle = Plugin Report
-      repTTRTitle = Time to Run
-      slowPlugins = The following plugins took longer than {0} seconds to run, there may be a way to optimize these or remove them if not needed
-      emailSend   = ..Sending Email
-      emailAtch   = vCheck attached to this email
-      HTMLdisp    = ..Displaying HTML results
-'@
-}
+# Default language en-US
+Import-LocalizedData -BaseDirectory ($ScriptPath + '\Lang') -BindingVariable lang -UICulture en-US -ErrorAction SilentlyContinue
 
-Import-LocalizedData -BaseDirectory ($ScriptPath + "\lang") -BindingVariable lang -ErrorAction SilentlyContinue
+# Override the default (en-US) if it exists in lang directory
+Import-LocalizedData -BaseDirectory ($ScriptPath + "\Lang") -BindingVariable lang -ErrorAction SilentlyContinue
 
 #endregion Internationalization
 
@@ -358,7 +329,7 @@ Function Get-HTMLTable {
 	# If only one column, fix up the table header
 	if (($content | Get-Member -MemberType Properties).count -eq 1)
 	{
-		$XMLTable.table.tr[0].th = (($content | Get-Member -MemberType Properties) | Select -ExpandProperty Name -First 1).ToString()
+		$XMLTable.table.tr[0].th = (($content | Get-Member -MemberType Properties) | Select-Object -ExpandProperty Name -First 1).ToString()
 	}
 	
 	# If format rules are specified
@@ -447,7 +418,7 @@ Function Get-HTMLList {
 		# If only one column, fix up the table header
 		if (($content | Get-Member -MemberType Properties).count -eq 1)
 		{
-			$XMLTable.table.tr[0].th = (($content | Get-Member -MemberType Properties) | Select -ExpandProperty Name -First 1).ToString()
+			$XMLTable.table.tr[0].th = (($content | Get-Member -MemberType Properties) | Select-Object -ExpandProperty Name -First 1).ToString()
 		}
 		
 		return (Format-HTMLEntities ([string]($XMLTable.OuterXml)))
@@ -654,13 +625,17 @@ function Get-ReportResource {
 			if (Test-Path $data[1] -ErrorAction SilentlyContinue) {
 				if ($ReturnType -eq "embed") {
 					# return a MIME/Base64 combo for embedding in HTML
-					$imgData = Get-Content ($data[1]) -Encoding Byte
+					if (((Get-Command get-content).Parameters).Keys -contains "AsByteStream") {
+						$imgData = Get-Content ($data[1]) -AsByteStream
+					} else {
+						$imgData = Get-Content ($data[1]) -Encoding Byte
+					}
 					$type = $data[1].substring($data[1].LastIndexOf(".") + 1)
 					return ("data:image/{0};base64,{1}" -f $type, [System.Convert]::ToBase64String($imgData))
 				}
 				if ($ReturnType -eq "linkedresource") {
 					# return a linked resource to be added to mail message
-					$lr = New-Object system.net.mail.LinkedResource($data[1])
+					$lr = New-Object system.net.mail.LinkedResource(Convert-Path $data[1])
 					$lr.ContentId = $cid
 					return $lr;
 				}
@@ -766,10 +741,6 @@ function Get-ConfigScripts {
 ################################################################################
 #                                Initialization                                #
 ################################################################################
-# Setup all paths required for script to run
-$ScriptPath = (Split-Path ((Get-Variable MyInvocation).Value).MyCommand.Path)
-$PluginsFolder = $ScriptPath + "\Plugins\"
-
 # if we have the job parameter set, get the paths from the config file.
 if ($job) {
 	[xml]$jobConfig = Get-Content $job
@@ -788,7 +759,7 @@ if ($job) {
 		foreach ($PluginPath in ($jobConfig.vCheck.plugins.path -split ";")) {
 			if (Test-Path $PluginPath) {
 				$PluginPaths += (Get-Item $PluginPath).Fullname
-				$PluginPaths += Get-Childitem $PluginPath -Recurse | ?{ $_.PSIsContainer } | Select -ExpandProperty FullName
+				$PluginPaths += Get-Childitem $PluginPath -Recurse | ?{ $_.PSIsContainer } | Select-Object -ExpandProperty FullName
 			} else {
 				$PluginPaths += $ScriptPath + "\Plugins"
 				Write-Warning ($lang.pluginpathInvalid -f $PluginPath, ($ScriptPath + "\Plugins"))
@@ -815,14 +786,14 @@ if ($job) {
 	}
 	# if no valid plugins specified, fall back to default
 	if (!$vCheckPlugins) {
-		$vCheckPlugins = Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | Sort FullName
+		$vCheckPlugins = Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | Sort-Object FullName
 	}
 } else {
 	$ToNatural = { [regex]::Replace($_, '\d+', { $args[0].Value.PadLeft(20) }) }
-	$vCheckPlugins = @(Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | where { $_.Directory -match "initialize" } | Sort $ToNatural)
-	$PluginsSubFolder = Get-ChildItem -Path $PluginsFolder | where { ($_.PSIsContainer) -and ($_.Name -notmatch "initialize") -and ($_.Name -notmatch "finish") }
-	$vCheckPlugins += $PluginsSubFolder | % { Get-ChildItem -Path $_.FullName -filter "*.ps1" | Sort $ToNatural }
-	$vCheckPlugins += Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | where { $_.Directory -match "finish" } | Sort $ToNatural
+	$vCheckPlugins = @(Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | Where-Object { $_.Directory -match "initialize" } | Sort-Object $ToNatural)
+	$PluginsSubFolder = Get-ChildItem -Path $PluginsFolder | Where-Object { ($_.PSIsContainer) -and ($_.Name -notmatch "initialize") -and ($_.Name -notmatch "finish") }
+	$vCheckPlugins += $PluginsSubFolder | % { Get-ChildItem -Path $_.FullName -filter "*.ps1" | Sort-Object $ToNatural }
+	$vCheckPlugins += Get-ChildItem -Path $PluginsFolder -filter "*.ps1" -Recurse | Where-Object { $_.Directory -match "finish" } | Sort-Object $ToNatural
 	$GlobalVariables = $ScriptPath + "\GlobalVariables.ps1"
 }
 
@@ -953,12 +924,12 @@ if (-not $GUIConfig) {
 		foreach ($Plugin in (Get-ChildItem $PluginsFolder -Include *.ps1, *.ps1.disabled -Recurse)) {
 			$Plugins += New-Object PSObject -Property @{
 				"Name" = (Get-PluginID  $Plugin.FullName).Title;
-				"Enabled" = (($vCheckPlugins | Select -ExpandProperty FullName) -Contains $plugin.FullName)
+				"Enabled" = (($vCheckPlugins | Select-Object -ExpandProperty FullName) -Contains $plugin.FullName)
 			}
 		}
 
 		if ($ListEnabledPluginsFirst) {
-			$Plugins = $Plugins | Sort -property @{ Expression = "Enabled"; Descending = $true }
+			$Plugins = $Plugins | Sort-Object -property @{ Expression = "Enabled"; Descending = $true }
 			$Comments = "Plugins in numerical order, enabled plugins listed first"
 		}
 
@@ -982,7 +953,7 @@ if (-not $GUIConfig) {
 			"Title" = $lang.repTTRTitle;
 			"Author" = "vCheck";
 			"Version" = $vCheckVersion;
-			"Details" = ($PluginResult | Where { $_.TimeToRun -gt $PluginSeconds } | Select Title, TimeToRun | Sort-Object TimeToRun -Descending);
+			"Details" = ($PluginResult | Where-Object { $_.TimeToRun -gt $PluginSeconds } | Select-Object Title, TimeToRun | Sort-Object TimeToRun -Descending);
 			"Display" = "List";
 			"TableFormat" = $null;
 			"Header" = ($lang.repTime -f [math]::round(($Finished - $Date).TotalMinutes, 2), ($Finished.ToLongDateString()), ($Finished.ToLongTimeString()));
@@ -1012,6 +983,10 @@ if (-not $GUIConfig) {
 			$pr | Add-Member -Type NoteProperty -Name pluginID -Value "plugin-$p"
 			$p++
 		}
+		if ($pr.Details -ne $null)
+		{
+			$emptyReport = $false
+		}
 	}
 
 	# Run Style replacement
@@ -1019,7 +994,7 @@ if (-not $GUIConfig) {
 
 	# Set the output filename 
 	if (-not (Test-Path -PathType Container $Outputpath)) { New-Item $Outputpath -type directory | Out-Null }
-	$Filename = ("{0}\{1}_vCheck_{2}.htm" -f $Outputpath, $Server, (Get-Date -Format "yyyyMMdd_HHmm"))
+	$Filename = ("{0}\{1}_vCheck_{2}.htm" -f $Outputpath, $VIServer, (Get-Date -Format "yyyyMMdd_HHmm"))
 
 	# Always generate the report with embedded images
 	$embedReport = $MyReport

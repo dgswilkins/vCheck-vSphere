@@ -33,7 +33,7 @@ $pLang = DATA {
 '@
 }
 # Override the default (en) if it exists in lang directory
-Import-LocalizedData -BaseDirectory ($ScriptPath + "\lang") -BindingVariable pLang -ErrorAction SilentlyContinue
+Import-LocalizedData -BaseDirectory ($ScriptPath + "\Lang") -BindingVariable pLang -ErrorAction SilentlyContinue
 
 # Clusters with HA disabled
 $HAIssues = @()
@@ -41,14 +41,13 @@ $HAIssues += $Clusters | Where-Object {$_.Name -notmatch $ClustersDoNotInclude -
   Select-Object @{Name="Cluster";Expression={$_.Name}},@{Name="Configuration Issue";Expression={$pLang.HADisabled}}
 
 # Clusters with host monitoring disabled 
-$HAIssues += $clusviews | where {$_.Name -notmatch $ClustersDoNotInclude -and ( $_.Configuration.DasConfig.HostMonitoring -eq "enabled" ) -ne $ClusterHAHostMonitoringShouldBeEnabled } |
+$HAIssues += $clusviews | Where-Object {$_.Name -notmatch $ClustersDoNotInclude -and ( $_.Configuration.DasConfig.HostMonitoring -eq "enabled" ) -ne $ClusterHAHostMonitoringShouldBeEnabled } |
    Select-Object @{Name="Cluster";Expression={$_.Name}}, @{N="Configuration Issue";E={$pLang.HAMonDisabled}}
 
 # Clusters with admission Control Disabled
 $HAIssues += $Clusters | Where-Object {$_.Name -notmatch $ClustersDoNotInclude -and $_.HAAdmissionControlEnabled -ne $ClusterHAAdmissionControlShouldBeEnabled } |
   Select-Object @{Name="Cluster";Expression={$_.Name}},@{Name="Configuration Issue";Expression={$pLang.HAACDisabled}}
-   
-   
+
 # Sort and return
 $HAIssues | Sort-Object Cluster
 

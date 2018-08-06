@@ -1,9 +1,9 @@
 $Title = "Mis-named virtual machines"
-$Header = "[count] Mis-named virtual machines"
+$Header = "Mis-named virtual machines: [count]"
 $Comments = "The following guest names do not match the name inside of the guest."
 $Display = "Table"
 $Author = "Frederic Martin"
-$PluginVersion = 1.2
+$PluginVersion = 1.3
 $PluginCategory = "vSphere"
 
 # Start of Settings
@@ -11,8 +11,11 @@ $PluginCategory = "vSphere"
 $MNDoNotInclude = "VM1_*|VM2_*"
 # End of Settings
 
-($FullVM | Where {$_.Runtime.PowerState -eq 'poweredOn' -AND $_.Name -notmatch $MNDoNotInclude -AND $_.Guest.HostName -ne "" -AND $_.Guest.HostName -notmatch $_.Name }) |
-   foreach {
+# Update settings where there is an override
+$MNDoNotInclude = Get-vCheckSetting $Title "MNDoNotInclude" $MNDoNotInclude
+
+($FullVM | Where-Object {$_.Runtime.PowerState -eq 'poweredOn' -AND $_.Name -notmatch $MNDoNotInclude -AND $_.Guest.HostName -ne "" -AND $_.Guest.HostName -notmatch $_.Name }) |
+   Foreach-Object {
       $vmguest = $_
       if ($vmguest.Parent -ne $null)
       {

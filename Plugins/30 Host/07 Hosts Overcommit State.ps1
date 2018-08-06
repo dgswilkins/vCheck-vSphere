@@ -1,5 +1,5 @@
 $Title = "Hosts Overcommit state"
-$Header = "Hosts overcommitting memory: [count]]"
+$Header = "Hosts overcommitting memory: [count]"
 $Comments = "Overcommitted hosts may cause issues with performance if memory is not issued when needed, this may cause ballooning and swapping"
 $Display = "Table"
 $Author = "Alan Renouf"
@@ -21,7 +21,7 @@ $pLang = DATA {
 '@
 }
 # Override the defaults (en) if language file exists in lang driectory
-Import-LocalizedData -BaseDirectory ($ScriptPath + "\lang") -BindingVariable pLang -ErrorAction SilentlyContinue
+Import-LocalizedData -BaseDirectory ($ScriptPath + "\Lang") -BindingVariable pLang -ErrorAction SilentlyContinue
 
 $OverCommit = @()
 $i = 0
@@ -29,7 +29,7 @@ $VMHCount = $VMH | Measure
 Foreach ($VMHost in $VMH) {
    Write-Progress -ID 2 -Parent 1 -Activity $plang.pluginActivity -Status $VMHost.Name -PercentComplete ((100*$i)/$VMHCount.Count)
    if ($VMMem) { Clear-Variable VMMem }
-   $VM | ?{$_.VMHost.Name -eq $VMHost.Name -and $_.PowerState -ne "PoweredOff"} | Foreach {
+   $VM | Where-Object {$_.VMHost.Name -eq $VMHost.Name -and $_.PowerState -ne "PoweredOff"} | Foreach-Object {
       [INT]$VMMem += $_.MemoryMB
    }
 
@@ -57,4 +57,4 @@ Foreach ($VMHost in $VMH) {
 }
 Write-Progress -ID 2 -Parent 1 -Activity $plang.pluginActivity -Status $lang.Complete -Completed
 
-$OverCommit | Select Host, "TotalMem$Units", "TotalAssignedMem$Units", "TotalUsed$Units", "OverCommit$Units"
+$OverCommit | Select-Object Host, "TotalMem$Units", "TotalAssignedMem$Units", "TotalUsed$Units", "OverCommit$Units"
