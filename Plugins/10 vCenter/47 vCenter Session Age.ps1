@@ -1,8 +1,8 @@
-$Title = "vCenter Sessions Age"
+﻿$Title = "vCenter Sessions Age"
 $Header = "vCenter Sessions Age Report"
 $Display = "Table"
-$Author = "Rudolf Kleijwegt"
-$PluginVersion = 1.2
+$Author = "Rudolf Kleijwegt (Modified by Douglas Wilkins)"
+$PluginVersion = 1.2.1
 $PluginCategory = "vSphere"
 
 # Start of Settings
@@ -11,13 +11,13 @@ $MaxvCenterSessionAge = 48
 # Enter minimum vCenter session length in minutes (IdleMinutes)
 $MinvCenterSessionAge = 10
 # Do not report on usernames that are defined here (regex)
-$vCenterSessionsDoNotInclude = "DOMAIN\\user1|DOMAIN\\user2"
+$vCenterSessionsDoNotInclude = "VSPHERE.LOCAL\vpxd-extension-*"
 # End of Settings
 
 # Update settings where there is an override
-$MaxvCenterSessionAge = Get-vCheckSetting $Title "MaxvCenterSessionAge" $MaxvCenterSessionAge
-$MinvCenterSessionAge = Get-vCheckSetting $Title "MinvCenterSessionAge" $MinvCenterSessionAge
-$vCenterSessionsDoNotInclude = Get-vCheckSetting $Title "vCenterSessionsDoNotInclude" $vCenterSessionsDoNotInclude
+#$MaxvCenterSessionAge = Get-vCheckSetting $Title "MaxvCenterSessionAge" $MaxvCenterSessionAge
+#$MinvCenterSessionAge = Get-vCheckSetting $Title "MinvCenterSessionAge" $MinvCenterSessionAge
+#$vCenterSessionsDoNotInclude = Get-vCheckSetting $Title "vCenterSessionsDoNotInclude" $vCenterSessionsDoNotInclude
 
 # Retrieve vCenter sessions and report any sessions that exceed the maximum session age
 
