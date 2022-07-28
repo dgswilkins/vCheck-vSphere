@@ -1,4 +1,4 @@
-$Title = "s/vMotion Information"
+﻿$Title = "s/vMotion Information"
 $Comments = "s/vMotions and how long they took to migrate between hosts and datastores"
 $Display = "Table"
 $Author = "Alan Renouf"
@@ -7,7 +7,7 @@ $PluginCategory = "vSphere"
 
 # Start of Settings 
 # Set the number of days to go back and check for s/vMotions
-$vMotionAge = 5
+$vMotionAge = 2
 # Include vMotions in report
 $IncludevMotions = $true;
 # Include Storage vMotions in report
