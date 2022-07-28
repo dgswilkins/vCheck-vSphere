@@ -1,4 +1,4 @@
-##
+﻿##
 # vCheck Plug-in: vCenter Site Recovery Manager - RPO Violation Report
 #
 # This plug-in can be used to generate a custom report of RPO violations found in the vCenter event log. It is heavily
@@ -53,7 +53,7 @@ $ActiveViolationsOnly = Get-vCheckSetting $Title "ActiveViolationsOnly" $ActiveV
 ## Begin code block obtained from: http://www.virtu-al.net/2013/06/14/reporting-on-rpo-violations-from-vsphere-replication/
 #  modified by Joel Gibson
 
-Foreach ($RPOvm in ($VM | Where-Object { $_.name -match $VMNameRegex })) {
+Foreach ($RPOvm in ($VMs | Where-Object { $_.name -match $VMNameRegex })) {
    $RPOEvents = Get-VIEventPlus -Entity $RPOvm -EvenTypeId "hbr.primary.RpoTooLowForServerEvent" | Where-Object { $_.Vm.Name -eq $RPOvm.Name } | Select-Object EventTypeId, CreatedTime, FullFormattedMessage, @{Name="VMName";Expression={$_.Vm.Name}} | Sort-Object CreatedTime
    if ($RPOEvents) {
       $Count = 0
