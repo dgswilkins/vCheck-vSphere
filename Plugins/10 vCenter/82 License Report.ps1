@@ -1,3 +1,11 @@
+﻿$Title = "vCenter License Report"
+$Header = "License Report"
+$Comments = "The following displays licenses registered with this server and usage. Include Evals: $licenseEvals"
+$Display = "Table"
+$Author = "Justin Mercier, Bill Wall (Modified by Douglas Wilkins)"
+$PluginVersion = 1.2.1
+$PluginCategory = "vSphere"
+
 # Start of Settings
 # Display Eval licenses?
 $licenseEvals = $true
@@ -26,16 +34,6 @@ Foreach ($LicenseMan in Get-View ($ServiceInstance | Select-Object -First 1).Con
 
     }
 }
-
-$vSphereLicInfo
-
-$Title = "vCenter License Report"
-$Header = "License Report"
-$Comments = "The following displays licenses registered with this server and usage. Include Evals: $licenseEvals"
-$Display = "Table"
-$Author = "Justin Mercier, Bill Wall"
-$PluginVersion = 1.2
-$PluginCategory = "vSphere"
 
 # Changelog
 ## 1.0 : Initial Release
