@@ -1,4 +1,4 @@
-$Title = "Number of VMs per Datastore"
+﻿$Title = "Number of VMs per Datastore"
 $Comments = "The Maximum number of VMs per datastore is 256, the following VMs are above the defined $NumVMsPerDatastore and may cause performance issues"
 $Display = "Table"
 $Author = "Alan Renouf, Frederic Martin"
@@ -7,7 +7,7 @@ $PluginCategory = "vSphere"
 
 # Start of Settings 
 # Max number of VMs per Datastore
-$NumVMsPerDatastore = 5
+$NumVMsPerDatastore = 65
 # Exclude these datastores from report
 $ExcludedDatastores = "ExcludeMe"
 # End of Settings
