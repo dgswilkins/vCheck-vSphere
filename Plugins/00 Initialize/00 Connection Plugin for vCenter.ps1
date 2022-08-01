@@ -263,25 +263,36 @@ function Get-VMLastPoweredOffDate {
         [VMware.VimAutomation.ViCore.Types.V1.Inventory.VirtualMachine] $vm)
   process {
     $Report = "" | Select-Object -Property Name,LastPoweredOffDate
-     $Report.Name = $_.Name
-    $Report.LastPoweredOffDate = (Get-VIEventPlus -Entity $vm | `
+    $Report.Name = $_.Name
+    $LastPoweredOffDate = (Get-VIEventPlus -Entity $vm | `
       Where-Object { $_.Gettype().Name -eq "VmPoweredOffEvent" } | `
        Select-Object -First 1).CreatedTime
-     $Report
+       if ($LastPoweredOffDate) {
+           $Report.LastPoweredOffDate = $LastPoweredOffDate
+       }
+       else {
+           $Report.LastPoweredOffDate = [datetime]0
+       }
+    $Report
   }
 }
 
 function Get-VMLastPoweredOnDate {
   param([Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [VMware.VimAutomation.ViCore.Types.V1.Inventory.VirtualMachine] $vm)
-
   process {
     $Report = "" | Select-Object -Property Name,LastPoweredOnDate
-     $Report.Name = $_.Name
-    $Report.LastPoweredOnDate = (Get-VIEventPlus -Entity $vm | `
+    $Report.Name = $_.Name
+    $LastPoweredOnDate = (Get-VIEventPlus -Entity $vm | `
       Where-Object { $_.Gettype().Name -match "VmPoweredOnEvent" } | `
        Select-Object -First 1).CreatedTime
-     $Report
+       if ($LastPoweredOnDate) {
+           $Report.LastPoweredOnDate = $LastPoweredOnDate
+       }
+       else {
+           $Report.LastPoweredOnDate = [datetime]0
+       }
+    $Report
   }
 }
 
