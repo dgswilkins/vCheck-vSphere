@@ -11,7 +11,7 @@ $MaxvCenterSessionAge = 48
 # Enter minimum vCenter session length in minutes (IdleMinutes)
 $MinvCenterSessionAge = 10
 # Do not report on usernames that are defined here (regex)
-$vCenterSessionsDoNotInclude = "VSPHERE.LOCAL\vpxd-extension-*"
+$vCenterSessionsDoNotInclude = "VSPHERE\.LOCAL\\.*"
 # End of Settings
 
 # Update settings where there is an override
