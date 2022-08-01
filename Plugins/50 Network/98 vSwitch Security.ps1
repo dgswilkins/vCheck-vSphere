@@ -34,7 +34,7 @@ if ($Revision) {
         $VersionOK = $true
         if ($Revision -ge 2548067) {
             #PowerCLI 6+
-            if (!(Get-Module -Name VMware.VimAutomation.Vds -ErrorAction SilentlyContinue))
+            if ((Get-Module -Name VMware.VimAutomation.Vds  -listavailable -ErrorAction SilentlyContinue))
             {
                 Import-Module VMware.VimAutomation.Vds
             }
