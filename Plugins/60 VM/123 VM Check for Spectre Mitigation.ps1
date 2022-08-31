@@ -37,15 +37,17 @@ foreach ($vmobj in $FullVM | Sort-Object -Property Name) {
             $vmAffected = $vHWPass
         }
 
-        $tmp = [pscustomobject] @{
-            VM = $vmDisplayName;
-            IBRPresent = $IBRSPass;
-            IBPBPresent = $IBPBPass;
-            STIBPresent = $STIBPPass;
-            vHW = $vmvHW;
-            Affected = $vmAffected;
+        if ($vmAffected -ne $false) {
+            $tmp = [pscustomobject] @{
+                VM = $vmDisplayName;
+                IBRPresent = $IBRSPass;
+                IBPBPresent = $IBPBPass;
+                STIBPresent = $STIBPPass;
+                vHW = $vmvHW;
+                Affected = $vmAffected;
+            }
+            $result+=$tmp
         }
-        $result+=$tmp
     }
 }
 $Result
@@ -55,7 +57,7 @@ $Header = "Virtual Machines Exposed to Spectre Vulnerability: $(@($Result).Count
 $Comments = "The following VMs require remediation to mitigate the Spectre vulnerability. See the following URLs for more information: <a href='https://kb.vmware.com/s/article/52085' target='_blank'>KB 52085</a>, <a href='https://www.virtuallyghetto.com/2018/01/verify-hypervisor-assisted-guest-mitigation-spectre-patches-using-powercli.html' target='_blank'>Virtually Ghetto</a>."
 $Display = "Table"
 $Author = "William Lam"
-$PluginVersion = 1.0
+$PluginVersion = 1.1
 $PluginCategory = "vSphere"
 
 
