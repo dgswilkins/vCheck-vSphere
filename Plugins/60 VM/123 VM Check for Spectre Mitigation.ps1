@@ -9,9 +9,9 @@ foreach ($vmobj in $FullVM | Sort-Object -Property Name) {
         $vmvHW = $vmobj.Config.Version
 
         $vHWPass = $false
-        if($vmvHW -eq "vmx-04" -or $vmvHW -eq "vmx-06" -or $vmvHW -eq "vmx-07" -or $vmvHW -eq "vmx-08") {
+        if($vmvHW -in @("vmx-04", "vmx-06", "vmx-07", "vmx-08")) {
             $vHWPass = "N/A"
-        } elseif($vmvHW -eq "vmx-09" -or $vmvHW -eq "vmx-10" -or $vmvHW -eq "vmx-11" -or $vmvHW -eq "vmx-12" -or $vmvHW -eq "vmx-13") {
+        } elseif($vmvHW -in @("vmx-09", "vmx-10", "vmx-11", "vmx-12", "vmx-13", "vmx-14", "vmx-15", "vmx-16", "vmx-17", "vmx-18", "vmx-19")) {
             $vHWPass = $true
         }
 
