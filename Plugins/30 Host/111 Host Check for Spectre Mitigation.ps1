@@ -23,18 +23,20 @@ foreach ($vmhost in $vmhosts | Sort-Object -Property Name) {
     }
 
     $vmhostAffected = $true
-    if($IBRSPass -or $IBPBPass -or $STIBPass) {
+    if($IBRSPass -and $IBPBPass -and $STIBPass) {
         $vmhostAffected = $false
     }
 
-    $tmp = [pscustomobject] @{
-        VMHost = $vmhostDisplayName;
-        IBRPresent = $IBRSPass;
-        IBPBPresent = $IBPBPass;
-        STIBPresent = $STIBPPass;
-        Affected = $vmhostAffected;
+    if ($vmhostAffected) {
+        $tmp = [pscustomobject] @{
+            VMHost = $vmhostDisplayName;
+            IBRPresent = $IBRSPass;
+            IBPBPresent = $IBPBPass;
+            STIBPresent = $STIBPPass;
+            Affected = $vmhostAffected;
+        }
+        $result+=$tmp
     }
-    $result+=$tmp
 }
 $Result
 
