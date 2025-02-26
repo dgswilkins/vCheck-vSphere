@@ -575,10 +575,10 @@ PS> Get-Datastore | Get-HttpDatastoreItem -Credential $cred -Recurse
     [cmdletbinding()]
     param(
         [VMware.VimAutomation.ViCore.Types.V1.VIServer]$Server = $global:DefaultVIServer,
-        [parameter(Mandatory=$true,ValueFromPipelineByPropertyName,ParameterSetName='Datastore')]
+        [parameter(Mandatory=$true,ValueFromPipelineByPropertyName,ParameterSetName="Datastore")]
         [Alias('Name')]
         [string]$Datastore,
-        [parameter(Mandatory=$true,ParameterSetName='Path')]
+        [parameter(Mandatory=$true,ParameterSetName="Path")]
         [string]$Path = '',
         [PSCredential]$Credential,
         [Switch]$Recurse = $false,
